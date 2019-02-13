@@ -6,6 +6,8 @@ namespace SeleniumNetCoreConsole
 {
     public class ApplicationLogic
     {
+        private const Int32 SLEEP_BETWEEN_REFRESH = 5000;
+        private const Int32 MAX_REFRESH = 5;
 
         private readonly IWebDriver _webDriver;
         private readonly INikePurchaseService _nikePurchaseService;
@@ -19,7 +21,7 @@ namespace SeleniumNetCoreConsole
             _nikePurchaseService = nikePurchaseService;
         }
 
-        public void Run(string[] args)
+        public async System.Threading.Tasks.Task RunAsync(string[] args)
         {
             //run code here
             // un-released:
@@ -36,10 +38,19 @@ namespace SeleniumNetCoreConsole
 
             //var url = "https://www.nike.com/launch/t/air-max-720-satrn-motorsport-black-dynamic-yellow/";
             var url = "https://www.nike.com/launch/t/reach-element-87-light-orewood-brown-volt-glow-cool-grey/";
-            _nikePurchaseService.LaunchPurchase(url);
+
+            Int32 attempts = 0;
+            bool bought = false;
+            url = "https://www.nike.com/launch/t/adapt-bb-black-white-pure-platinum/";
+            while(!bought && attempts < MAX_REFRESH)
+            {
+                bought = await _nikePurchaseService.LaunchPurchase(url);
+                ++attempts;
+                System.Threading.Thread.Sleep(SLEEP_BETWEEN_REFRESH);
+            }
 
             //url = "https://www.nike.com/t/air-zoom-pegasus-35-mens-camo-running-shoe-cV5zsb";
-            _nikePurchaseService.RegularPurchase(url);
+            await _nikePurchaseService.RegularPurchase(url);
         }
     }
 }

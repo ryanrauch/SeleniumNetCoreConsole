@@ -19,6 +19,12 @@ namespace SeleniumNetCoreConsole.Services
             IWebDriver driver = _webDriver;
             driver.Navigate().GoToUrl(url);
 
+            var notifyButton = driver.FindElement(By.CssSelector(".product-info .cta-btn"));
+            if(notifyButton.Text.Contains("Notify", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             // Select Size
             SeleniumSetMethods.Click(driver, "label", FindBy.Class);
             System.Threading.Thread.Sleep(250); ////////////////////////////////

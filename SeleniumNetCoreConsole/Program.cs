@@ -24,7 +24,7 @@ namespace SeleniumNetCoreConsole
         {
             var container = ConfigureContainer();
             var application = container.Resolve<ApplicationLogic>();
-            application.Run(args);
+            application.RunAsync(args);
         }
     }
 }
