@@ -9,4 +9,11 @@ namespace SeleniumNetCoreConsole
         CssSelector,
         LinkText
     }
+
+    public enum ShoeType
+    {
+        NikeLaunch,
+        NikeRegular,
+        Adidas
+    }
 }

@@ -1,14 +1,12 @@
 ﻿using System;
 using OpenQA.Selenium;
+using SeleniumNetCoreConsole.Models;
 using SeleniumNetCoreConsole.Services.Interfaces;
 
 namespace SeleniumNetCoreConsole
 {
     public class ApplicationLogic
     {
-        private const Int32 SLEEP_BETWEEN_REFRESH = 5000;
-        private const Int32 MAX_REFRESH = 5;
-
         private readonly IWebDriver _webDriver;
         private readonly INikePurchaseService _nikePurchaseService;
 
@@ -39,18 +37,25 @@ namespace SeleniumNetCoreConsole
             //var url = "https://www.nike.com/launch/t/air-max-720-satrn-motorsport-black-dynamic-yellow/";
             var url = "https://www.nike.com/launch/t/reach-element-87-light-orewood-brown-volt-glow-cool-grey/";
 
-            Int32 attempts = 0;
-            bool bought = false;
-            url = "https://www.nike.com/launch/t/adapt-bb-black-white-pure-platinum/";
-            while(!bought && attempts < MAX_REFRESH)
+            //url = "https://www.nike.com/launch/t/adapt-bb-black-white-pure-platinum/";
+
+            DateTime releaseTime = new DateTime(2019, 02, 14, 09, 00, 00);
+            DesiredShoe shoe = new DesiredShoe()
             {
-                bought = await _nikePurchaseService.LaunchPurchase(url);
-                ++attempts;
-                System.Threading.Thread.Sleep(SLEEP_BETWEEN_REFRESH);
-            }
+                URL = url,
+                ShoeName = "Reach Element 87",
+                TargetSize = "11.5",
+                ReleaseDate = releaseTime,
+                PollingStartDate = releaseTime.AddMinutes(-1),
+                PollingEndDate = releaseTime.AddMinutes(4),
+                RefreshInterval = 1000,
+                MaxRefreshCount = 0
+            };
+
+            bool bought = await _nikePurchaseService.LaunchPurchase(shoe);
 
             //url = "https://www.nike.com/t/air-zoom-pegasus-35-mens-camo-running-shoe-cV5zsb";
-            await _nikePurchaseService.RegularPurchase(url);
+            await _nikePurchaseService.RegularPurchase(shoe);
         }
     }
 }

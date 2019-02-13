@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
+using SeleniumNetCoreConsole.Models;
 using SeleniumNetCoreConsole.Services.Interfaces;
 
 namespace SeleniumNetCoreConsole.Services
@@ -8,21 +9,45 @@ namespace SeleniumNetCoreConsole.Services
     public class NikePurchaseService : INikePurchaseService
     {
         private readonly IWebDriver _webDriver;
+        private readonly IShippingAndBillingService _shippingAndBillingService;
 
-        public NikePurchaseService(IWebDriver webDriver)
+        public NikePurchaseService(
+            IWebDriver webDriver,
+            IShippingAndBillingService shippingAndBillingService)
         {
             _webDriver = webDriver;
+            _shippingAndBillingService = shippingAndBillingService;
         }
 
-        public async Task<bool> LaunchPurchase(string url)
+        public async Task<bool> LaunchPurchase(DesiredShoe shoe)
         {
+            ShippingInformation shipping = _shippingAndBillingService.GetShippingInformation();
+            BillingInformation billing = _shippingAndBillingService.GetBillingInformation();
             IWebDriver driver = _webDriver;
-            driver.Navigate().GoToUrl(url);
+            driver.Navigate().GoToUrl(shoe.URL);
 
-            var notifyButton = driver.FindElement(By.CssSelector(".product-info .cta-btn"));
-            if(notifyButton.Text.Contains("Notify", StringComparison.OrdinalIgnoreCase))
+            bool unreleased = false;
+            while(!unreleased)
             {
-                return false;
+                try
+                {
+                    var notifyButton = driver.FindElement(By.CssSelector(".product-info .cta-btn"));
+                    if (notifyButton.Text.Contains("Notify", StringComparison.OrdinalIgnoreCase))
+                    {
+                        unreleased = false;
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    unreleased = true;
+                }
+                //if (notifyButton.Text.Contains("Notify", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    unreleased = true;
+                //}
+                System.Threading.Thread.Sleep(shoe.RefreshInterval);
+                Console.WriteLine("refreshed at " + DateTime.Now.ToString());
             }
 
             // Select Size
@@ -39,7 +64,7 @@ namespace SeleniumNetCoreConsole.Services
                 if (SeleniumSetMethods.ClickAndVerifyText(driver,
                                                          ".size:nth-child(" + i.ToString() + ") > .size-grid-dropdown",
                                                          FindBy.CssSelector,
-                                                         Secrets.ShoeSize))
+                                                         shoe.TargetSize))
                 {
                     foundSize = true;
                     break;
@@ -72,15 +97,15 @@ namespace SeleniumNetCoreConsole.Services
             System.Threading.Thread.Sleep(500); ////////////////////////////////
 
             // Shipping Information
-            SeleniumSetMethods.EnterText(driver, "firstName", Secrets.FirstName, FindBy.Id);
-            SeleniumSetMethods.EnterText(driver, "lastName", Secrets.LastName, FindBy.Id);
-            SeleniumSetMethods.EnterText(driver, "address1", Secrets.Address1, FindBy.Id);
+            SeleniumSetMethods.EnterText(driver, "firstName", shipping.FirstName, FindBy.Id);
+            SeleniumSetMethods.EnterText(driver, "lastName", shipping.LastName, FindBy.Id);
+            SeleniumSetMethods.EnterText(driver, "address1", shipping.Address1, FindBy.Id);
             // need to expand address2 section here
-            SeleniumSetMethods.EnterText(driver, "city", Secrets.City, FindBy.Id);
-            SeleniumSetMethods.SelectDropDown(driver, "state", Secrets.State, FindBy.Id);
-            SeleniumSetMethods.EnterText(driver, "postalCode", Secrets.ZipCode, FindBy.Id);
-            SeleniumSetMethods.EnterText(driver, "email", Secrets.Email, FindBy.Id);
-            SeleniumSetMethods.EnterText(driver, "phoneNumber", Secrets.PhoneNumber, FindBy.Id);
+            SeleniumSetMethods.EnterText(driver, "city", shipping.City, FindBy.Id);
+            SeleniumSetMethods.SelectDropDown(driver, "state", shipping.State, FindBy.Id);
+            SeleniumSetMethods.EnterText(driver, "postalCode", shipping.ZipCode, FindBy.Id);
+            SeleniumSetMethods.EnterText(driver, "email", shipping.Email, FindBy.Id);
+            SeleniumSetMethods.EnterText(driver, "phoneNumber", shipping.PhoneNumber, FindBy.Id);
 
             // Save and Continue Button
             SeleniumSetMethods.Click(driver, ".js-next-step", FindBy.CssSelector);
@@ -93,7 +118,7 @@ namespace SeleniumNetCoreConsole.Services
             driver.SwitchTo().Frame(4);
 
             // Billing Information
-            string ccn = Secrets.CreditCardNumber;
+            string ccn = billing.CreditCardNumber;
             SeleniumSetMethods.EnterText(driver, "creditCardNumber", ccn.Substring(0, 4), FindBy.Id);
             SeleniumSetMethods.EnterText(driver, "creditCardNumber", ccn.Substring(4, 4), FindBy.Id);
             string creditCardNumber = ccn.Substring(8);
@@ -102,11 +127,12 @@ namespace SeleniumNetCoreConsole.Services
                 SeleniumSetMethods.EnterText(driver, "creditCardNumber", c.ToString(), FindBy.Id);
             }
 
-            SeleniumSetMethods.EnterText(driver, "expirationDate", Secrets.ExpDate, FindBy.Id);
-            SeleniumSetMethods.EnterText(driver, "cvNumber", Secrets.CVNumber, FindBy.Id);
+            SeleniumSetMethods.EnterText(driver, "expirationDate", billing.ExpirationDate, FindBy.Id);
+            SeleniumSetMethods.EnterText(driver, "cvNumber", billing.CVV2, FindBy.Id);
 
-            if(Secrets.DEBUG_MODE)
+            if(Constants.DEBUG_MODE)
             {
+                driver.Quit();
                 return false; //works
             }
 
@@ -116,7 +142,7 @@ namespace SeleniumNetCoreConsole.Services
             return true;
         }
 
-        public async Task<bool> RegularPurchase(string url)
+        public async Task<bool> RegularPurchase(DesiredShoe shoe)
         {
             return false;
         }

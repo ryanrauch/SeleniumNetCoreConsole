@@ -15,6 +15,7 @@ namespace SeleniumNetCoreConsole
             var builder = new ContainerBuilder();
             builder.RegisterType<ApplicationLogic>().AsSelf();
             builder.RegisterType<NikePurchaseService>().As<INikePurchaseService>().SingleInstance();
+            builder.RegisterType<SecretsFileShippingAndBillingService>().As<IShippingAndBillingService>().SingleInstance();
             builder.RegisterType<FirefoxDriver>().As<IWebDriver>(); 
             //builder.RegisterType<ChromeDriver>().As<IWebDriver>();
             return builder.Build();
