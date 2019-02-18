@@ -16,8 +16,14 @@ namespace SeleniumNetCoreConsole
             builder.RegisterType<ApplicationLogic>().AsSelf();
             builder.RegisterType<NikePurchaseService>().As<INikePurchaseService>().SingleInstance();
             builder.RegisterType<SecretsFileShippingAndBillingService>().As<IShippingAndBillingService>().SingleInstance();
-            builder.RegisterType<FirefoxDriver>().As<IWebDriver>(); 
+            builder.RegisterType<HardCodedDesiredShoeService>().As<IDesiredShoeService>().SingleInstance();
+
+            //builder.RegisterType<LocalFileLogService>().As<ILogService>().SingleInstance();
+            builder.RegisterType<ConsoleLogService>().As<ILogService>().SingleInstance();
+
             //builder.RegisterType<ChromeDriver>().As<IWebDriver>();
+            builder.RegisterType<FirefoxDriver>().As<IWebDriver>();
+
             return builder.Build();
         }
 
@@ -25,7 +31,7 @@ namespace SeleniumNetCoreConsole
         {
             var container = ConfigureContainer();
             var application = container.Resolve<ApplicationLogic>();
-            application.RunAsync(args);
+            application.Run(args);
         }
     }
 }

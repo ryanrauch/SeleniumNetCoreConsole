@@ -19,7 +19,7 @@ namespace SeleniumNetCoreConsole.Services
             _shippingAndBillingService = shippingAndBillingService;
         }
 
-        public async Task<bool> LaunchPurchase(DesiredShoe shoe)
+        public bool LaunchPurchase(DesiredShoe shoe)
         {
             ShippingInformation shipping = _shippingAndBillingService.GetShippingInformation();
             BillingInformation billing = _shippingAndBillingService.GetBillingInformation();
@@ -31,11 +31,17 @@ namespace SeleniumNetCoreConsole.Services
             {
                 try
                 {
+                    driver.Navigate().GoToUrl(shoe.URL);
+
                     var notifyButton = driver.FindElement(By.CssSelector(".product-info .cta-btn"));
                     if (notifyButton.Text.Contains("Notify", StringComparison.OrdinalIgnoreCase))
                     {
                         unreleased = false;
                     }
+                    //else
+                    //{
+                    //    driver.Quit();
+                    //}
                 }
                 catch(Exception ex)
                 {
@@ -142,7 +148,7 @@ namespace SeleniumNetCoreConsole.Services
             return true;
         }
 
-        public async Task<bool> RegularPurchase(DesiredShoe shoe)
+        public bool RegularPurchase(DesiredShoe shoe)
         {
             return false;
         }

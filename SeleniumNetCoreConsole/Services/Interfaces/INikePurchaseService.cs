@@ -5,7 +5,7 @@ namespace SeleniumNetCoreConsole.Services.Interfaces
 {
     public interface INikePurchaseService
     {
-        Task<bool> LaunchPurchase(DesiredShoe shoe);
-        Task<bool> RegularPurchase(DesiredShoe shoe);
+        bool LaunchPurchase(DesiredShoe shoe);
+        bool RegularPurchase(DesiredShoe shoe);
     }
 }
